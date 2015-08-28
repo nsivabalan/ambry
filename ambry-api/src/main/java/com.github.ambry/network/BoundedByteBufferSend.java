@@ -12,9 +12,13 @@ import java.nio.channels.WritableByteChannel;
  * This is mainly used to optimize serialization of response objects on the request handler
  * threads rather than the network threads.
  */
-public class BoundedByteBufferSend implements Send {
+public class BoundedByteBufferSend implements WritableByteChannel {
 
-  private final ByteBuffer buffer;
+  private ByteBuffer buffer;
+
+  public BoundedByteBufferSend(){
+
+  }
 
   public BoundedByteBufferSend(Send request)
       throws IOException {
@@ -39,7 +43,6 @@ public class BoundedByteBufferSend implements Send {
     this.buffer = buffer;
   }
 
-  @Override
   public void writeTo(WritableByteChannel channel)
       throws IOException {
     if (!isSendComplete()) {
@@ -47,17 +50,34 @@ public class BoundedByteBufferSend implements Send {
     }
   }
 
-  @Override
   public boolean isSendComplete() {
     return buffer.remaining() == 0;
   }
 
-  @Override
   public long sizeInBytes() {
     return buffer.limit();
   }
 
   public BoundedByteBufferSend duplicate() {
     return new BoundedByteBufferSend(buffer.duplicate());
+  }
+
+  @Override
+  public int write(ByteBuffer src)
+      throws IOException {
+    this.buffer.clear();
+    this.buffer = ByteBuffer.wrap(src.array());
+    return 0;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  @Override
+  public boolean isOpen() {
+    return true;
+  }
+
+  @Override
+  public void close()
+      throws IOException {
+    this.buffer.clear();
   }
 }

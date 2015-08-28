@@ -1,5 +1,6 @@
 package com.github.ambry.store;
 
+import com.github.ambry.network.BoundedByteBufferSend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -94,7 +95,9 @@ class StoreMessageReadSet implements MessageReadSet {
     long startOffset = readOptions.get(index).getOffset() + relativeOffset;
     long sizeToRead = Math.min(maxSize, readOptions.get(index).getSize() - relativeOffset);
     logger.trace("Blob Message Read Set position {} count {}", startOffset, sizeToRead);
-    long written = fileChannel.transferTo(startOffset, sizeToRead, channel);
+    BoundedByteBufferSend boundedByteBufferSend = new BoundedByteBufferSend();
+    long written = fileChannel.transferTo(startOffset, sizeToRead, boundedByteBufferSend);
+    boundedByteBufferSend.writeTo(channel);
     logger.trace("Written {} bytes to the write channel from the file channel : {}", written, file.getAbsolutePath());
     return written;
   }
