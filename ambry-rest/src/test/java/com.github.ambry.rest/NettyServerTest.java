@@ -113,9 +113,11 @@ public class NettyServerTest {
     VerifiableProperties verifiableProperties = new VerifiableProperties(properties);
     NettyConfig nettyConfig = new NettyConfig(verifiableProperties);
     NettyMetrics nettyMetrics = new NettyMetrics(new MetricRegistry());
+    ConnectionStatsHandler connectionStatsHandler = new ConnectionStatsHandler(nettyMetrics);
     RestRequestHandler requestHandler = new MockRestRequestResponseHandler();
     PublicAccessLogger publicAccessLogger = new PublicAccessLogger(new String[]{}, new String[]{});
     RestServerState restServerState = new RestServerState("/healthCheck");
-    return new NettyServer(nettyConfig, nettyMetrics, requestHandler, publicAccessLogger, restServerState);
+    return new NettyServer(nettyConfig, nettyMetrics, requestHandler, publicAccessLogger, restServerState,
+        connectionStatsHandler);
   }
 }

@@ -13,6 +13,7 @@
  */
 package com.github.ambry.rest;
 
+import com.codahale.metrics.MetricRegistry;
 import com.github.ambry.router.Callback;
 import com.github.ambry.router.FutureResult;
 import io.netty.bootstrap.Bootstrap;
@@ -84,7 +85,8 @@ public class NettyClient implements Closeable {
       @Override
       public void initChannel(SocketChannel ch)
           throws Exception {
-        ch.pipeline().addLast(new HttpClientCodec()).addLast(new ChunkedWriteHandler()).addLast(communicationHandler);
+        ch.pipeline().addLast(new ConnectionStatsHandler(new NettyMetrics(new MetricRegistry())), new HttpClientCodec())
+            .addLast(new ChunkedWriteHandler()).addLast(communicationHandler);
       }
     });
     createChannel();
@@ -103,7 +105,8 @@ public class NettyClient implements Closeable {
    * @return a {@link Future} that tracks the arrival of the response for this request.
    */
   public Future<Queue<HttpObject>> sendRequest(HttpRequest request, ChunkedInput<HttpContent> content,
-      Callback<Queue<HttpObject>> callback) {
+      Callback<Queue<HttpObject>> callback)
+      throws InterruptedException {
     this.request = request;
     this.content = content;
     this.callback = callback;

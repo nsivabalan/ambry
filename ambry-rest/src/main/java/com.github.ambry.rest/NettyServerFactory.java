@@ -33,6 +33,7 @@ public class NettyServerFactory implements NioServerFactory {
   private final RestRequestHandler requestHandler;
   private final PublicAccessLogger publicAccessLogger;
   private final RestServerState restServerState;
+  private final ConnectionStatsHandler connectionStatsHandler;
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   /**
@@ -51,6 +52,7 @@ public class NettyServerFactory implements NioServerFactory {
         && restServerState != null) {
       this.nettyConfig = new NettyConfig(verifiableProperties);
       this.nettyMetrics = new NettyMetrics(metricRegistry);
+      this.connectionStatsHandler = new ConnectionStatsHandler(nettyMetrics);
       this.requestHandler = requestHandler;
       this.publicAccessLogger = publicAccessLogger;
       this.restServerState = restServerState;
@@ -83,6 +85,7 @@ public class NettyServerFactory implements NioServerFactory {
    */
   @Override
   public NioServer getNioServer() {
-    return new NettyServer(nettyConfig, nettyMetrics, requestHandler, publicAccessLogger, restServerState);
+    return new NettyServer(nettyConfig, nettyMetrics, requestHandler, publicAccessLogger, restServerState,
+        connectionStatsHandler);
   }
 }

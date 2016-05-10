@@ -52,6 +52,7 @@ class NettyServer implements NioServer {
   private final RestRequestHandler requestHandler;
   private final PublicAccessLogger publicAccessLogger;
   private final RestServerState restServerState;
+  private final ConnectionStatsHandler connectionStatsHandler;
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
   /**
@@ -62,9 +63,11 @@ class NettyServer implements NioServer {
    * @param publicAccessLogger the {@link PublicAccessLogger} that can be used for public access logging
    * @param restServerState the {@link RestServerState} that can be used to check the health of the system
    *                              to respond to health check requests
+   * @param connectionStatsHandler the {@link ConnectionStatsHandler} to collect metrics related to connections
    */
   public NettyServer(NettyConfig nettyConfig, NettyMetrics nettyMetrics, RestRequestHandler requestHandler,
-      PublicAccessLogger publicAccessLogger, RestServerState restServerState) {
+      PublicAccessLogger publicAccessLogger, RestServerState restServerState,
+      ConnectionStatsHandler connectionStatsHandler) {
     this.nettyConfig = nettyConfig;
     this.nettyMetrics = nettyMetrics;
     this.requestHandler = requestHandler;
@@ -72,6 +75,7 @@ class NettyServer implements NioServer {
     this.restServerState = restServerState;
     bossGroup = new NioEventLoopGroup(nettyConfig.nettyServerBossThreadCount);
     workerGroup = new NioEventLoopGroup(nettyConfig.nettyServerWorkerThreadCount);
+    this.connectionStatsHandler = connectionStatsHandler;
     logger.trace("Instantiated NettyServer");
   }
 
@@ -91,8 +95,10 @@ class NettyServer implements NioServer {
         public void initChannel(SocketChannel ch)
             throws Exception {
           ch.pipeline()
-              // for http encoding/decoding. Note that we get content in 8KB chunks and a change to that number has
-              // to go here.
+              // connection stats handler
+              .addLast("ConnectionStatsHandler", connectionStatsHandler)
+                  // for http encoding/decoding. Note that we get content in 8KB chunks and a change to that number has
+                  // to go here.
               .addLast("codec", new HttpServerCodec())
                   // for health check request handling
               .addLast("HealthCheckHandler", new HealthCheckHandler(restServerState, nettyMetrics))

@@ -14,9 +14,11 @@
 package com.github.ambry.rest;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -25,6 +27,8 @@ import com.codahale.metrics.MetricRegistry;
  * Exports metrics that are triggered by Netty to the provided {@link MetricRegistry}.
  */
 class NettyMetrics {
+
+  MetricRegistry metricRegistry;
 
   // Rates
   // NettyMessageProcessor
@@ -107,6 +111,11 @@ class NettyMetrics {
   // NettyServer
   public final Histogram nettyServerShutdownTimeInMs;
   public final Histogram nettyServerStartTimeInMs;
+  // ConnectionStatsHandler
+  Counter connectionsConnectedCount;
+  Counter connectionsDisconnectedCount;
+  private Gauge<Long> openConnections;
+
   // PublicAccessLogRequestHandler
   public final Counter publicAccessLogRequestDisconnectWhileInProgressCount;
   public final Counter publicAccessLogRequestCloseWhileRequestInProgressCount;
@@ -118,6 +127,7 @@ class NettyMetrics {
    * @param metricRegistry the {@link MetricRegistry} to use for the metrics.
    */
   public NettyMetrics(MetricRegistry metricRegistry) {
+    this.metricRegistry = metricRegistry;
     // Rates
     // NettyMessageProcessor
     bytesReadRate = metricRegistry.meter(MetricRegistry.name(NettyMessageProcessor.class, "BytesReadRate"));
@@ -237,5 +247,20 @@ class NettyMetrics {
     // NettyServer
     nettyServerShutdownTimeInMs = metricRegistry.histogram(MetricRegistry.name(NettyServer.class, "ShutdownTimeInMs"));
     nettyServerStartTimeInMs = metricRegistry.histogram(MetricRegistry.name(NettyServer.class, "StartTimeInMs"));
+    // ConnectionStatsHandler
+    connectionsConnectedCount =
+        metricRegistry.counter(MetricRegistry.name(NettyServer.class, "ConnectionsConnectedCount"));
+    connectionsDisconnectedCount =
+        metricRegistry.counter(MetricRegistry.name(NettyServer.class, "ConnectionsDisconnectedCount"));
+  }
+
+  public void registerConnectionsStatsHandler(AtomicLong openConnectionsCount) {
+    openConnections = new Gauge<Long>() {
+      @Override
+      public Long getValue() {
+        return openConnectionsCount.get();
+      }
+    };
+    metricRegistry.register(MetricRegistry.name(NettyServer.class, "OpenConnections"), openConnections);
   }
 }
