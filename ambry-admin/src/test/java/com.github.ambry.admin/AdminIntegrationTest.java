@@ -46,7 +46,6 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -412,8 +411,7 @@ public class AdminIntegrationTest {
    */
   private void verifyDeleted(FullHttpRequest httpRequest, HttpResponseStatus expectedStatusCode)
       throws ExecutionException, InterruptedException {
-    Future<Queue<HttpObject>> responsePartsFuture = nettyClient.sendRequest(httpRequest, null, null);
-    Queue<HttpObject> responseParts = responsePartsFuture.get();
+    Queue<HttpObject> responseParts = nettyClient.sendRequest(httpRequest, null, null).get();
     HttpResponse response = (HttpResponse) responseParts.poll();
     discardContent(responseParts, 1);
     assertEquals("Unexpected response status", expectedStatusCode, response.getStatus());

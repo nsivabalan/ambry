@@ -38,35 +38,6 @@ class ConnectionStatsHandler extends ChannelDuplexHandler {
   }
 
   /**
-   * Calls {@link ChannelHandlerContext#fireChannelActive()} to forward
-   * to the next {@link io.netty.channel.ChannelInboundHandler} in the {@link io.netty.channel.ChannelPipeline}.
-   *
-   * Sub-classes may override this method to change behavior.
-   */
-  /*@Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    logger.trace("Channel Connected " + ctx.channel().remoteAddress());
-    metrics.connectionsConnectedCount.inc();
-    openConnections.incrementAndGet();
-    super.channelActive(ctx);
-  }
-
-  /**
-   * Calls {@link ChannelHandlerContext#fireChannelInactive()} to forward
-   * to the next {@link io.netty.channel.ChannelInboundHandler} in the {@link io.netty.channel.ChannelPipeline}.
-   *
-   * Sub-classes may override this method to change behavior.
-   */
-  /*@Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    logger.trace("Channel Disconnected " + ctx.channel().remoteAddress());
-    metrics.connectionsDisconnectedCount.inc();
-    openConnections.decrementAndGet();
-    super.channelInactive(ctx);
-  } */
-
-
-  /**
    * Calls {@link ChannelHandlerContext#connect(java.net.SocketAddress, java.net.SocketAddress, io.netty.channel.ChannelPromise)} to forward
    * to the next {@link io.netty.channel.ChannelOutboundHandler} in the {@link io.netty.channel.ChannelPipeline}.
    *
