@@ -1507,6 +1507,7 @@ public class IndexTest {
     // enable daemon thread to run hard deletes
     properties.put("store.enable.hard.delete", "true");
     reloadIndex(false);
+    fail("Dummy test fail ");
     assertTrue("Hard delete is not enabled", index.hardDeleter.isRunning());
     // IndexSegment still uses real time so advance time so that it goes 2 days past the real time.
     advanceTime(SystemTime.getInstance().milliseconds() + 2 * Time.MsPerSec * Time.SecsPerDay);
