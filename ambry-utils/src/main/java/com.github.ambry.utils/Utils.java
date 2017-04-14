@@ -27,8 +27,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -45,7 +43,6 @@ import org.json.JSONObject;
  * A set of utility methods
  */
 public class Utils {
-
   /**
    * Constant to define "infinite" time.
    * <p/>
