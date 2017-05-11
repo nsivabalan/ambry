@@ -476,7 +476,7 @@ public class TestUtils {
           new ClusterMapConfig(new VerifiableProperties(properties)));
     }
 
-    void addNewDataNodes(int i) throws JSONException {
+    public void addNewDataNodes(int i) throws JSONException {
       this.dataNodeCount += i;
       this.hardwareLayout = new HardwareLayout(getJsonHardwareLayout(clusterName, getDatacenters(false)),
           new ClusterMapConfig(new VerifiableProperties(properties)));
@@ -666,7 +666,7 @@ public class TestUtils {
           defaultReplicaCount);
     }
 
-    void addNewPartitions(int i) throws JSONException {
+    public void addNewPartitions(int i) throws JSONException {
       this.partitionCount += i;
       this.partitionLayout = new PartitionLayout(testHardwareLayout.getHardwareLayout(), updateJsonPartitionLayout());
     }
@@ -760,7 +760,7 @@ public class TestUtils {
   /**
    * A class to initialize and hold information about each Zk Server.
    */
-  static class ZkInfo {
+  public static class ZkInfo {
     String dcName;
     int port;
     String dataDir;
@@ -773,7 +773,7 @@ public class TestUtils {
      * @param dcName the name of the datacenter.
      * @param port the port at which this Zk server should run on localhost.
      */
-    ZkInfo(String tempDirPath, String dcName, int port, boolean start) throws IOException {
+    public ZkInfo(String tempDirPath, String dcName, int port, boolean start) throws IOException {
       this.dcName = dcName;
       this.port = port;
       this.dataDir = tempDirPath + "/dataDir";
@@ -794,7 +794,11 @@ public class TestUtils {
       zkServer.start();
     }
 
-    void shutdown() {
+    public int getPort() {
+      return this.port;
+    }
+
+    public void shutdown() {
       if (zkServer != null) {
         zkServer.shutdown();
       }
@@ -805,7 +809,7 @@ public class TestUtils {
    * Construct a ZK layout JSON using predetermined information.
    * @return the constructed JSON.
    */
-  static JSONObject constructZkLayoutJSON(Collection<ZkInfo> zkInfos) throws JSONException {
+  public static JSONObject constructZkLayoutJSON(Collection<ZkInfo> zkInfos) throws JSONException {
     JSONArray zkInfosJson = new JSONArray();
     for (ZkInfo zkInfo : zkInfos) {
       JSONObject zkInfoJson = new JSONObject();
@@ -820,7 +824,7 @@ public class TestUtils {
    * Construct a {@link TestHardwareLayout}
    * @return return the constructed layout.
    */
-  static TestHardwareLayout constructInitialHardwareLayoutJSON(String clusterName) throws JSONException {
+  public static TestHardwareLayout constructInitialHardwareLayoutJSON(String clusterName) throws JSONException {
     return new TestHardwareLayout(clusterName, 6, 100L * 1024 * 1024 * 1024, 6, 2, 18088, 20, false);
   }
 
@@ -828,7 +832,7 @@ public class TestUtils {
    * Construct a {@link TestPartitionLayout}
    * @return return the constructed layout.
    */
-  static TestPartitionLayout constructInitialPartitionLayoutJSON(TestHardwareLayout testHardwareLayout,
+  public static TestPartitionLayout constructInitialPartitionLayoutJSON(TestHardwareLayout testHardwareLayout,
       int partitionCount) throws JSONException {
     return new TestPartitionLayout(testHardwareLayout, partitionCount, PartitionState.READ_WRITE, 1024L * 1024 * 1024,
         3);

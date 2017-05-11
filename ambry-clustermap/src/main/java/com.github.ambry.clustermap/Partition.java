@@ -35,7 +35,7 @@ import static com.github.ambry.clustermap.ClusterMapUtils.*;
  * A Partition is the unit of data management in Ambry. Each Partition is uniquely identifiable by an ID. Partitions
  * consist of one or more {@link Replica}s. Replicas ensure that a Partition is available and reliable.
  */
-class Partition extends PartitionId {
+public class Partition extends PartitionId {
 
   private static final short Version_Field_Size_In_Bytes = 2;
   private static final short Current_Version = 1;
@@ -49,7 +49,7 @@ class Partition extends PartitionId {
   private Logger logger = LoggerFactory.getLogger(getClass());
 
   // For constructing new Partition
-  Partition(long id, PartitionState partitionState, long replicaCapacityInBytes) {
+  public Partition(long id, PartitionState partitionState, long replicaCapacityInBytes) {
     logger.trace("Partition " + id + ", " + partitionState + ", " + replicaCapacityInBytes);
     this.id = id;
     this.partitionState = partitionState;
@@ -59,11 +59,11 @@ class Partition extends PartitionId {
     validate();
   }
 
-  Partition(PartitionLayout partitionLayout, JSONObject jsonObject) throws JSONException {
+  public Partition(PartitionLayout partitionLayout, JSONObject jsonObject) throws JSONException {
     this(partitionLayout.getHardwareLayout(), jsonObject);
   }
 
-  Partition(HardwareLayout hardwareLayout, JSONObject jsonObject) throws JSONException {
+  public Partition(HardwareLayout hardwareLayout, JSONObject jsonObject) throws JSONException {
     if (logger.isTraceEnabled()) {
       logger.trace("Partition " + jsonObject.toString());
     }
@@ -116,8 +116,16 @@ class Partition extends PartitionId {
     return replicas;
   }
 
-  long getId() {
+  public long getId() {
     return id;
+  }
+
+  public void setPartitionState(PartitionState partitionState) {
+    this.partitionState = partitionState;
+  }
+
+  public void setReplicaCapacityInBytes(long replicaCapacityInBytes) {
+    this.replicaCapacityInBytes = replicaCapacityInBytes;
   }
 
   /**

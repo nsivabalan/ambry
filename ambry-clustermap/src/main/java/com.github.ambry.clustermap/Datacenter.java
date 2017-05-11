@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  *
  * This class is meant to be used within the {@link StaticClusterManager}.
  */
-class Datacenter {
+public class Datacenter {
   private final HardwareLayout hardwareLayout;
   private final String name;
   private final ArrayList<DataNode> dataNodes;
@@ -60,7 +60,7 @@ class Datacenter {
     return hardwareLayout;
   }
 
-  String getName() {
+  public String getName() {
     return name;
   }
 
