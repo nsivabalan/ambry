@@ -25,6 +25,7 @@ import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.MessageFormatRecord;
 import com.github.ambry.network.NetworkClient;
 import com.github.ambry.network.NetworkClientErrorCode;
@@ -187,7 +188,7 @@ public class GetBlobOperationTest {
    * @throws Exception
    */
   private void doPut() throws Exception {
-    blobProperties = new BlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     userMetadata = new byte[10];
     random.nextBytes(userMetadata);
     putContent = new byte[blobSize];

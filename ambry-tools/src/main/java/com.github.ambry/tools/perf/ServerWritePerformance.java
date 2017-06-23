@@ -25,6 +25,7 @@ import com.github.ambry.config.ConnectionPoolConfig;
 import com.github.ambry.config.SSLConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.network.BlockingChannelConnectionPool;
 import com.github.ambry.network.ConnectedChannel;
@@ -334,7 +335,7 @@ public class ServerWritePerformance {
           int randomNum = rand.nextInt((maxBlobSize - minBlobSize) + 1) + minBlobSize;
           byte[] blob = new byte[randomNum];
           byte[] usermetadata = new byte[new Random().nextInt(1024)];
-          BlobProperties props = new BlobProperties(randomNum, "test");
+          BlobProperties props = BlobPropertiesUtils.getBlobProperties(randomNum, "test");
           ConnectedChannel channel = null;
 
           try {

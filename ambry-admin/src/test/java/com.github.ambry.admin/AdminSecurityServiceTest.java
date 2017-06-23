@@ -18,6 +18,7 @@ import com.github.ambry.config.AdminConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.rest.MockRestResponseChannel;
 import com.github.ambry.rest.ResponseStatus;
 import com.github.ambry.rest.RestMethod;
@@ -54,8 +55,8 @@ public class AdminSecurityServiceTest {
   private static final AdminConfig ADMIN_CONFIG = new AdminConfig(new VerifiableProperties(new Properties()));
   private static final String SERVICE_ID = "AdminSecurityService";
   private static final String OWNER_ID = SERVICE_ID;
-  private static final BlobInfo DEFAULT_INFO =
-      new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", true, Utils.Infinite_Time), null);
+  private static final BlobInfo DEFAULT_INFO = new BlobInfo(
+      BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", true, Utils.Infinite_Time), null);
 
   private final SecurityService securityService =
       new AdminSecurityService(ADMIN_CONFIG, new AdminMetrics(new MetricRegistry()));
@@ -161,14 +162,17 @@ public class AdminSecurityServiceTest {
     // normal
     testHeadBlob(DEFAULT_INFO);
     // with no owner id
-    BlobInfo blobInfo =
-        new BlobInfo(new BlobProperties(100, SERVICE_ID, null, "image/gif", false, Utils.Infinite_Time), null);
+    BlobInfo blobInfo = new BlobInfo(
+        BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, null, "image/gif", false, Utils.Infinite_Time), null);
     testHeadBlob(blobInfo);
     // with no content type
-    blobInfo = new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, null, false, Utils.Infinite_Time), null);
+    blobInfo =
+        new BlobInfo(BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, null, false, Utils.Infinite_Time),
+            null);
     testHeadBlob(blobInfo);
     // with a TTL
-    blobInfo = new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", false, 10000), null);
+    blobInfo =
+        new BlobInfo(BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", false, 10000), null);
     testHeadBlob(blobInfo);
 
     // GET BlobInfo
@@ -179,25 +183,26 @@ public class AdminSecurityServiceTest {
     // GET Blob
     // less than chunk threshold size
     blobInfo = new BlobInfo(
-        new BlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes - 1, SERVICE_ID, OWNER_ID, "image/gif",
-            false, 10000), null);
+        BlobPropertiesUtils.getBlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes - 1, SERVICE_ID,
+            OWNER_ID, "image/gif", false, 10000), null);
     testGetBlob(blobInfo);
     // == chunk threshold size
     blobInfo = new BlobInfo(
-        new BlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes, SERVICE_ID, OWNER_ID, "image/gif",
-            false, 10000), null);
+        BlobPropertiesUtils.getBlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes, SERVICE_ID,
+            OWNER_ID, "image/gif", false, 10000), null);
     testGetBlob(blobInfo);
     // more than chunk threshold size
     blobInfo = new BlobInfo(
-        new BlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes * 2, SERVICE_ID, OWNER_ID, "image/gif",
-            false, 10000), null);
+        BlobPropertiesUtils.getBlobProperties(ADMIN_CONFIG.adminChunkedGetResponseThresholdInBytes * 2, SERVICE_ID,
+            OWNER_ID, "image/gif", false, 10000), null);
     testGetBlob(blobInfo);
     // Get blob with content type null
-    blobInfo = new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, null, true, 10000), null);
+    blobInfo = new BlobInfo(BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, null, true, 10000), null);
     testGetBlob(blobInfo);
     // Get blob for a private blob
-    blobInfo =
-        new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", false, Utils.Infinite_Time), null);
+    blobInfo = new BlobInfo(
+        BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, "image/gif", false, Utils.Infinite_Time),
+        null);
     testGetBlob(blobInfo);
     // not modified response
     // > creation time (in secs).
@@ -208,7 +213,8 @@ public class AdminSecurityServiceTest {
     testGetNotModifiedBlob(blobInfo, blobInfo.getBlobProperties().getCreationTimeInMs() - 1000);
 
     // Get blob for a public blob with content type as "text/html"
-    blobInfo = new BlobInfo(new BlobProperties(100, SERVICE_ID, OWNER_ID, "text/html", true, 10000), null);
+    blobInfo =
+        new BlobInfo(BlobPropertiesUtils.getBlobProperties(100, SERVICE_ID, OWNER_ID, "text/html", true, 10000), null);
     testGetBlob(blobInfo);
     // not modified response
     // > creation time (in secs).

@@ -20,6 +20,7 @@ import com.github.ambry.commons.ResponseHandler;
 import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.network.NetworkReceive;
 import com.github.ambry.network.RequestInfo;
 import com.github.ambry.network.ResponseInfo;
@@ -92,7 +93,7 @@ public class PutOperationTest {
   public void testSendIncomplete() throws Exception {
     int numChunks = NonBlockingRouter.MAX_IN_MEM_CHUNKS + 1;
     BlobProperties blobProperties =
-        new BlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+        BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     byte[] userMetadata = new byte[10];
     byte[] content = new byte[chunkSize * numChunks];
     random.nextBytes(content);

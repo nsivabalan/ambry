@@ -21,6 +21,7 @@ import com.github.ambry.commons.LoggingNotificationSystem;
 import com.github.ambry.config.ClusterMapConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.router.Callback;
 import com.github.ambry.router.FutureResult;
 import com.github.ambry.router.GetBlobOptionsBuilder;
@@ -615,7 +616,7 @@ public class ConcurrencyTestTool {
       int randomNum = localRandom.nextInt((maxBlobSize - minBlobSize) + 1) + minBlobSize;
       final byte[] blob = new byte[randomNum];
       byte[] usermetadata = new byte[new Random().nextInt(1024)];
-      BlobProperties props = new BlobProperties(randomNum, "test");
+      BlobProperties props = BlobPropertiesUtils.getBlobProperties(randomNum, "test");
       final FutureResult futureResult = new FutureResult();
       try {
         final long startTimeInMs = SystemTime.getInstance().milliseconds();

@@ -26,6 +26,7 @@ import com.github.ambry.config.ConnectionPoolConfig;
 import com.github.ambry.config.SSLConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.network.BlockingChannelConnectionPool;
 import com.github.ambry.network.ConnectedChannel;
@@ -146,7 +147,7 @@ public class DirectoryUploader {
           throw new IllegalArgumentException("File length is " + f.length() + "; files larger than " + Integer.MAX_VALUE
               + " cannot be put using this tool.");
         }
-        BlobProperties props = new BlobProperties(f.length(), "migration");
+        BlobProperties props = BlobPropertiesUtils.getBlobProperties(f.length(), "migration");
         byte[] usermetadata = new byte[1];
         FileInputStream stream = null;
         try {

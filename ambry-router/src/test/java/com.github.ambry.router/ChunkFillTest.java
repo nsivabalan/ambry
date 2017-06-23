@@ -20,6 +20,7 @@ import com.github.ambry.commons.ResponseHandler;
 import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.utils.MockTime;
 import com.github.ambry.utils.Utils;
 import java.nio.ByteBuffer;
@@ -103,7 +104,7 @@ public class ChunkFillTest {
     NonBlockingRouterMetrics routerMetrics = new NonBlockingRouterMetrics(mockClusterMap);
     ResponseHandler responseHandler = new ResponseHandler(mockClusterMap);
     BlobProperties putBlobProperties =
-        new BlobProperties(blobSize, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+        BlobPropertiesUtils.getBlobProperties(blobSize, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     Random random = new Random();
     byte[] putUserMetadata = new byte[10];
     random.nextBytes(putUserMetadata);
@@ -200,7 +201,7 @@ public class ChunkFillTest {
     NonBlockingRouterMetrics routerMetrics = new NonBlockingRouterMetrics(mockClusterMap);
     ResponseHandler responseHandler = new ResponseHandler(mockClusterMap);
     BlobProperties putBlobProperties =
-        new BlobProperties(blobSize, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+        BlobPropertiesUtils.getBlobProperties(blobSize, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     Random random = new Random();
     byte[] putUserMetadata = new byte[10];
     random.nextBytes(putUserMetadata);

@@ -26,20 +26,24 @@ public class BlobPropertiesSerDe {
 
   static final short Version1 = 1;
   static final short Version2 = 2;
-  private static final short currentVersion = Version1;
+  private static final short currentVersion = Version2;
   private static final int Version_Field_Size_In_Bytes = 2;
   private static final int TTL_Field_Size_In_Bytes = 8;
   private static final int Private_Field_Size_In_Bytes = 1;
   private static final int CreationTime_Field_Size_In_Bytes = 8;
   private static final int Variable_Field_Size_In_Bytes = 4;
   private static final int BlobSize_Field_Size_In_Bytes = 8;
+  private static final int ACCOUNT_ID_FIELD_SIZE_IN_BYTES = Short.BYTES;
+  private static final int CONTIANER_ID_FIELD_SIZE_IN_BYTES = Short.BYTES;
+  private static final int CREATOR_ACCOUNT_ID_FIELD_SIZE_IN_BYTES = Short.BYTES;
 
   public static int getBlobPropertiesSerDeSize(BlobProperties properties) {
     return Version_Field_Size_In_Bytes + TTL_Field_Size_In_Bytes + Private_Field_Size_In_Bytes
         + CreationTime_Field_Size_In_Bytes + BlobSize_Field_Size_In_Bytes + Variable_Field_Size_In_Bytes
         + Utils.getNullableStringLength(properties.getContentType()) + Variable_Field_Size_In_Bytes
         + Utils.getNullableStringLength(properties.getOwnerId()) + Variable_Field_Size_In_Bytes
-        + Utils.getNullableStringLength(properties.getServiceId());
+        + Utils.getNullableStringLength(properties.getServiceId()) + ACCOUNT_ID_FIELD_SIZE_IN_BYTES
+        + CONTIANER_ID_FIELD_SIZE_IN_BYTES + CREATOR_ACCOUNT_ID_FIELD_SIZE_IN_BYTES;
   }
 
   public static BlobProperties getBlobPropertiesFromStream(DataInputStream stream) throws IOException {
@@ -54,7 +58,8 @@ public class BlobPropertiesSerDe {
     String serviceId = Utils.readIntString(stream);
     switch (version) {
       case Version1:
-        toReturn = new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, ttl, creationTime);
+        toReturn = new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, ttl, creationTime,
+            BlobProperties.LEGACY_ACCOUNT_ID, BlobProperties.LEGACY_CONTAINER_ID, BlobProperties.LEGACY_ACCOUNT_ID);
         break;
       case Version2:
         short accountId = stream.readShort();
@@ -84,5 +89,8 @@ public class BlobPropertiesSerDe {
     Utils.serializeNullableString(outputBuffer, properties.getContentType());
     Utils.serializeNullableString(outputBuffer, properties.getOwnerId());
     Utils.serializeNullableString(outputBuffer, properties.getServiceId());
+    outputBuffer.putShort(properties.getAccountId());
+    outputBuffer.putShort(properties.getContainerId());
+    outputBuffer.putShort(properties.getCreatorAccountId());
   }
 }

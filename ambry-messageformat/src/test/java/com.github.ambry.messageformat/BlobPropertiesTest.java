@@ -129,7 +129,8 @@ public class BlobPropertiesTest {
       short creatorAccountId, short version) {
     if (version == BlobPropertiesSerDe.Version1) {
       return new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds,
-          creationTimeMs);
+          creationTimeMs, BlobProperties.LEGACY_ACCOUNT_ID, BlobProperties.LEGACY_CONTAINER_ID,
+          BlobProperties.LEGACY_ACCOUNT_ID);
     } else {
       return new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds,
           creationTimeMs, accountId, containerId, creatorAccountId);
@@ -154,7 +155,8 @@ public class BlobPropertiesTest {
       boolean isPrivate, long timeToLiveInSeconds, short accountId, short containerId, short creatorAccountId,
       short version) {
     if (version == BlobPropertiesSerDe.Version1) {
-      return new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds);
+      return BlobPropertiesUtils.getBlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate,
+          timeToLiveInSeconds);
     } else {
       return new BlobProperties(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds, accountId,
           containerId, creatorAccountId);
@@ -174,7 +176,7 @@ public class BlobPropertiesTest {
   private BlobProperties getBlobProperties(long blobSize, String serviceId, short accountId, short containerId,
       short creatorAccountId, short version) {
     if (version == BlobPropertiesSerDe.Version1) {
-      return new BlobProperties(blobSize, serviceId);
+      return BlobPropertiesUtils.getBlobProperties(blobSize, serviceId);
     } else {
       return new BlobProperties(blobSize, serviceId, accountId, containerId, creatorAccountId);
     }

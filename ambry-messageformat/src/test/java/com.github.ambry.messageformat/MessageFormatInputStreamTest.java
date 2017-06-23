@@ -37,7 +37,7 @@ public class MessageFormatInputStreamTest {
   private void messageFormatBlobPropertiesTest(short blobVersion, BlobType blobType)
       throws IOException, MessageFormatException {
     StoreKey key = new MockId("id1");
-    BlobProperties prop = new BlobProperties(10, "servid");
+    BlobProperties prop = BlobPropertiesUtils.getBlobProperties(10, "servid");
     byte[] usermetadata = new byte[1000];
     new Random().nextBytes(usermetadata);
     int blobContentSize = 2000;

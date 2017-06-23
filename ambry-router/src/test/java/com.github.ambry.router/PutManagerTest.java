@@ -22,6 +22,7 @@ import com.github.ambry.commons.ServerErrorCode;
 import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.messageformat.CompositeBlobInfo;
 import com.github.ambry.messageformat.MetadataContentSerDe;
@@ -461,7 +462,7 @@ public class PutManagerTest {
         // Change the actual content size.
         requestAndResult.putContent = new byte[actualBlobSize];
         requestAndResult.putBlobProperties =
-            new BlobProperties(sizeInProperties, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+            BlobPropertiesUtils.getBlobProperties(sizeInProperties, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
         random.nextBytes(requestAndResult.putContent);
         requestAndResultsList.add(requestAndResult);
         submitPutsAndAssertSuccess(true);
@@ -818,7 +819,7 @@ public class PutManagerTest {
     FutureResult<String> result;
 
     RequestAndResult(int blobSize) {
-      putBlobProperties = new BlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+      putBlobProperties = BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
       putUserMetadata = new byte[10];
       random.nextBytes(putUserMetadata);
       putContent = new byte[blobSize];

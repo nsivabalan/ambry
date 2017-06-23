@@ -791,7 +791,8 @@ class PutOperation {
         chunkBlobProperties = new BlobProperties(buf.remaining(), passedInBlobProperties.getServiceId(),
             passedInBlobProperties.getOwnerId(), passedInBlobProperties.getContentType(),
             passedInBlobProperties.isPrivate(), passedInBlobProperties.getTimeToLiveInSeconds(),
-            passedInBlobProperties.getCreationTimeInMs());
+            passedInBlobProperties.getCreationTimeInMs(), passedInBlobProperties.getAccountId(),
+            passedInBlobProperties.getContainerId(), passedInBlobProperties.getCreatorAccountId());
         operationTracker = new SimpleOperationTracker(routerConfig.routerDatacenterName, partitionId, false,
             routerConfig.routerPutSuccessTarget, routerConfig.routerPutRequestParallelism);
         correlationIdToChunkPutRequestInfo.clear();
@@ -1193,7 +1194,9 @@ class PutOperation {
       finalBlobProperties =
           new BlobProperties(getBlobSize(), passedInBlobProperties.getServiceId(), passedInBlobProperties.getOwnerId(),
               passedInBlobProperties.getContentType(), passedInBlobProperties.isPrivate(),
-              passedInBlobProperties.getTimeToLiveInSeconds(), passedInBlobProperties.getCreationTimeInMs());
+              passedInBlobProperties.getTimeToLiveInSeconds(), passedInBlobProperties.getCreationTimeInMs(),
+              passedInBlobProperties.getAccountId(), passedInBlobProperties.getContainerId(),
+              passedInBlobProperties.getCreatorAccountId());
       if (getNumDataChunks() > 1) {
         // values returned are in the right order as TreeMap returns them in key-order.
         List<StoreKey> orderedChunkIdList = new ArrayList<>(indexToChunkIds.values());

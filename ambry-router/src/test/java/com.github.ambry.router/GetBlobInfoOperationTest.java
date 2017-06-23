@@ -23,6 +23,7 @@ import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.network.NetworkClient;
 import com.github.ambry.network.NetworkClientErrorCode;
 import com.github.ambry.network.RequestInfo;
@@ -124,7 +125,7 @@ public class GetBlobInfoOperationTest {
         CHECKOUT_TIMEOUT_MS, mockServerLayout, time);
     router = new NonBlockingRouter(new RouterConfig(vprops), new NonBlockingRouterMetrics(mockClusterMap),
         networkClientFactory, new LoggingNotificationSystem(), mockClusterMap, time);
-    blobProperties = new BlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     userMetadata = new byte[BLOB_USER_METADATA_SIZE];
     random.nextBytes(userMetadata);
     putContent = new byte[BLOB_SIZE];

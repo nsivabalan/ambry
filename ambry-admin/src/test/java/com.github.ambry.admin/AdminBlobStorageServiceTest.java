@@ -23,6 +23,7 @@ import com.github.ambry.config.AdminConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.protocol.GetOption;
 import com.github.ambry.rest.IdConverter;
 import com.github.ambry.rest.IdConverterFactory;
@@ -356,7 +357,7 @@ public class AdminBlobStorageServiceTest {
   @Test
   public void oldStyleUserMetadataTest() throws Exception {
     ByteBuffer content = ByteBuffer.allocate(0);
-    BlobProperties blobProperties = new BlobProperties(0, "userMetadataTestOldStyleServiceID");
+    BlobProperties blobProperties = BlobPropertiesUtils.getBlobProperties(0, "userMetadataTestOldStyleServiceID");
     byte[] usermetadata = TestUtils.getRandomBytes(25);
     String blobId = router.putBlob(blobProperties, usermetadata, new ByteBufferReadableStreamChannel(content)).get();
 
@@ -1398,14 +1399,17 @@ class AdminTestRouter implements Router {
     GetBlobResult result;
     switch (options.getOperationType()) {
       case BlobInfo:
-        result = new GetBlobResult(new BlobInfo(new BlobProperties(0, "FrontendTestRouter"), new byte[0]), null);
+        result =
+            new GetBlobResult(new BlobInfo(BlobPropertiesUtils.getBlobProperties(0, "FrontendTestRouter"), new byte[0]),
+                null);
         break;
       case Data:
         result = new GetBlobResult(null, new ByteBufferReadableStreamChannel(ByteBuffer.allocate(0)));
         break;
       default:
-        result = new GetBlobResult(new BlobInfo(new BlobProperties(0, "FrontendTestRouter"), new byte[0]),
-            new ByteBufferReadableStreamChannel(ByteBuffer.allocate(0)));
+        result =
+            new GetBlobResult(new BlobInfo(BlobPropertiesUtils.getBlobProperties(0, "FrontendTestRouter"), new byte[0]),
+                new ByteBufferReadableStreamChannel(ByteBuffer.allocate(0)));
         break;
     }
     return completeOperation(result, callback, OpType.GetBlob);

@@ -30,6 +30,8 @@ import com.github.ambry.config.SSLConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobData;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesSerDe;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.messageformat.MessageFormatException;
 import com.github.ambry.messageformat.MessageFormatFlags;
@@ -91,6 +93,11 @@ import static org.junit.Assert.*;
 
 public final class ServerTestUtil {
 
+  static final int LOG_PUT_RECORD_OVERHEAD = 130;
+  private static final int LOG_DELETE_RECORD_OVERHEAD = 86;
+  static final int LOG_DELETE_RECORD_SIZE =
+      LOG_DELETE_RECORD_OVERHEAD + MessageFormatRecord.Delete_Format_V1.getDeleteRecordSize();
+
   protected static void endToEndTest(Port targetPort, String routerDatacenter, String sslEnabledDatacenters,
       MockCluster cluster, SSLConfig clientSSLConfig, SSLSocketFactory clientSSLSocketFactory, Properties routerProps)
       throws InterruptedException, IOException, InstantiationException {
@@ -98,7 +105,7 @@ public final class ServerTestUtil {
       MockClusterMap clusterMap = cluster.getClusterMap();
       byte[] usermetadata = new byte[1000];
       byte[] data = new byte[31870];
-      BlobProperties properties = new BlobProperties(31870, "serviceid1");
+      BlobProperties properties = BlobPropertiesUtils.getBlobProperties(31870, "serviceid1");
       new Random().nextBytes(usermetadata);
       new Random().nextBytes(data);
       List<PartitionId> partitionIds = clusterMap.getWritablePartitionIds();
@@ -137,7 +144,8 @@ public final class ServerTestUtil {
       assertEquals(ServerErrorCode.No_Error, response3.getError());
 
       // put blob 4 that is expired
-      BlobProperties propertiesExpired = new BlobProperties(31870, "serviceid1", "ownerid", "jpeg", false, 0);
+      BlobProperties propertiesExpired =
+          BlobPropertiesUtils.getBlobProperties(31870, "serviceid1", "ownerid", "jpeg", false, 0);
       PutRequest putRequest4 =
           new PutRequest(1, "client1", blobId4, propertiesExpired, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
@@ -336,7 +344,7 @@ public final class ServerTestUtil {
       List<AmbryServer> serverList = cluster.getServers();
       byte[] usermetadata = new byte[100];
       byte[] data = new byte[100];
-      BlobProperties properties = new BlobProperties(100, "serviceid1");
+      BlobProperties properties = BlobPropertiesUtils.getBlobProperties(100, "serviceid1");
       new Random().nextBytes(usermetadata);
       new Random().nextBytes(data);
 
@@ -386,7 +394,8 @@ public final class ServerTestUtil {
       testLatePutRequest(blobIds.get(0), properties, usermetadata, data, channel1, channel2, channel3,
           ServerErrorCode.No_Error);
       // Test the case where a put arrives with the same id as one in the server, but the blob is not identical.
-      BlobProperties differentProperties = new BlobProperties(properties.getBlobSize(), properties.getServiceId());
+      BlobProperties differentProperties =
+          BlobPropertiesUtils.getBlobProperties(properties.getBlobSize(), properties.getServiceId());
       testLatePutRequest(blobIds.get(0), differentProperties, usermetadata, data, channel1, channel2, channel3,
           ServerErrorCode.Blob_Already_Exists);
       byte[] differentUsermetadata = Arrays.copyOf(usermetadata, usermetadata.length);
@@ -785,7 +794,8 @@ public final class ServerTestUtil {
     for (int i = 0; i < numberOfRequestsToSend; i++) {
       int size = new Random().nextInt(5000);
       final BlobProperties properties =
-          new BlobProperties(size, "service1", "owner id check", "image/jpeg", false, Utils.Infinite_Time);
+          BlobPropertiesUtils.getBlobProperties(size, "service1", "owner id check", "image/jpeg", false,
+              Utils.Infinite_Time);
       final byte[] metadata = new byte[new Random().nextInt(1000)];
       final byte[] blob = new byte[size];
       new Random().nextBytes(metadata);
@@ -845,12 +855,13 @@ public final class ServerTestUtil {
       Port dataNode3Port, MockCluster cluster, SSLConfig clientSSLConfig1, SSLSocketFactory clientSSLSocketFactory1,
       MockNotificationSystem notificationSystem, Properties routerProps)
       throws InterruptedException, IOException, InstantiationException {
+    long expectedEndTokenOffset = 0;
     // interestedDataNodePortNumber is used to locate the datanode and hence has to be PlainText port
     try {
       MockClusterMap clusterMap = cluster.getClusterMap();
       byte[] usermetadata = new byte[1000];
       byte[] data = new byte[1000];
-      BlobProperties properties = new BlobProperties(1000, "serviceid1");
+      BlobProperties properties = BlobPropertiesUtils.getBlobProperties(1000, "serviceid1");
       new Random().nextBytes(usermetadata);
       new Random().nextBytes(data);
       PartitionId partition = clusterMap.getWritablePartitionIds().get(0);
@@ -881,6 +892,9 @@ public final class ServerTestUtil {
       channel2.connect();
       channel3.connect();
       channel1.send(putRequest);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       InputStream putResponseStream = channel1.receive().getInputStream();
       PutResponse response = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response.getError());
@@ -889,6 +903,9 @@ public final class ServerTestUtil {
           new PutRequest(1, "client1", blobId2, properties, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
       channel2.send(putRequest2);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       putResponseStream = channel2.receive().getInputStream();
       PutResponse response2 = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response2.getError());
@@ -897,6 +914,9 @@ public final class ServerTestUtil {
           new PutRequest(1, "client1", blobId3, properties, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
       channel3.send(putRequest3);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       putResponseStream = channel3.receive().getInputStream();
       PutResponse response3 = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response3.getError());
@@ -906,6 +926,9 @@ public final class ServerTestUtil {
           new PutRequest(1, "client1", blobId4, properties, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
       channel1.send(putRequest);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       putResponseStream = channel1.receive().getInputStream();
       response = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response.getError());
@@ -915,6 +938,9 @@ public final class ServerTestUtil {
           new PutRequest(1, "client1", blobId5, properties, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
       channel2.send(putRequest2);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       putResponseStream = channel2.receive().getInputStream();
       response2 = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response2.getError());
@@ -924,6 +950,9 @@ public final class ServerTestUtil {
           new PutRequest(1, "client1", blobId6, properties, ByteBuffer.wrap(usermetadata), ByteBuffer.wrap(data),
               properties.getBlobSize(), BlobType.DataBlob);
       channel3.send(putRequest3);
+      expectedEndTokenOffset +=
+          LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties) + usermetadata.length
+              + data.length;
       putResponseStream = channel3.receive().getInputStream();
       response3 = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response3.getError());
@@ -1029,6 +1058,7 @@ public final class ServerTestUtil {
       // delete a blob and ensure it is propagated
       DeleteRequest deleteRequest = new DeleteRequest(1, "reptest", blobId1);
       channel1.send(deleteRequest);
+      expectedEndTokenOffset += LOG_DELETE_RECORD_SIZE;
       InputStream deleteResponseStream = channel1.receive().getInputStream();
       DeleteResponse deleteResponse = DeleteResponse.readFrom(new DataInputStream(deleteResponseStream));
       assertEquals(ServerErrorCode.No_Error, deleteResponse.getError());
@@ -1050,13 +1080,9 @@ public final class ServerTestUtil {
       // get the data node to inspect replication tokens on
       DataNodeId dataNodeId = clusterMap.getDataNodeId("localhost", interestedDataNodePortNumber);
       // read the replica file and check correctness
-      // The token offset value of 13074 was derived as followed:
-      // - Up to this point we have done 6 puts and 1 delete
-      // - Each put takes up 2179 bytes in the log (1000 data, 1000 user metadata, 179 ambry metadata)
-      // - Each delete takes up 97 bytes in the log
       // - The offset stored in the token will be the position of the last entry in the log (the delete, in this case)
-      // - Thus, it will be at the end of the 6 puts: 6 * 2179 = 13074
-      checkReplicaTokens(clusterMap, dataNodeId, 13074, "0");
+      // - Thus, it will be at the end of the 6 puts (excluding the delete entry)
+      checkReplicaTokens(clusterMap, dataNodeId, expectedEndTokenOffset - LOG_DELETE_RECORD_SIZE, "0");
 
       // Shut down server 1
       cluster.getServers().get(0).shutdown();
@@ -1265,7 +1291,8 @@ public final class ServerTestUtil {
               long parsedToken = endTokenOffset == null ? -1 : endTokenOffset.getOffset();
               System.out.println("The parsed token is " + parsedToken);
               if (partitionId.isEqual(targetPartition)) {
-                Assert.assertFalse("Parsed offset must not be larger than target value: " + targetOffset,
+                Assert.assertFalse(
+                    "Parsed offset " + parsedToken + " must not be larger than target value: " + targetOffset,
                     parsedToken > targetOffset);
                 if (parsedToken == targetOffset) {
                   numFound++;

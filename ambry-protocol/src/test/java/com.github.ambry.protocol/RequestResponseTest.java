@@ -19,6 +19,7 @@ import com.github.ambry.clustermap.PartitionId;
 import com.github.ambry.commons.BlobId;
 import com.github.ambry.commons.ServerErrorCode;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.messageformat.MessageFormatFlags;
 import com.github.ambry.store.FindToken;
@@ -183,29 +184,32 @@ public class RequestResponseTest {
     rnd.nextBytes(blob);
 
     BlobProperties blobProperties =
-        new BlobProperties(blobSize, "serviceID", "memberId", "contentType", false, Utils.Infinite_Time);
+        BlobPropertiesUtils.getBlobProperties(blobSize, "serviceID", "memberId", "contentType", false,
+            Utils.Infinite_Time);
     testPutRequest(clusterMap, correlationId, clientId, blobId, blobProperties, userMetadata, BlobType.DataBlob, blob,
         blobSize);
 
     // Put Request with size in blob properties different from the data size and blob type: Data blob.
-    blobProperties =
-        new BlobProperties(blobSize * 10, "serviceID", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(blobSize * 10, "serviceID", "memberId", "contentType", false,
+        Utils.Infinite_Time);
     testPutRequest(clusterMap, correlationId, clientId, blobId, blobProperties, userMetadata, BlobType.DataBlob, blob,
         blobSize);
 
     // Put Request with size in blob properties different from the data size and blob type: Metadata blob.
-    blobProperties =
-        new BlobProperties(blobSize * 10, "serviceID", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(blobSize * 10, "serviceID", "memberId", "contentType", false,
+        Utils.Infinite_Time);
     testPutRequest(clusterMap, correlationId, clientId, blobId, blobProperties, userMetadata, BlobType.MetadataBlob,
         blob, blobSize);
 
     // Put Request with empty user metadata.
     byte[] emptyUserMetadata = new byte[0];
-    blobProperties = new BlobProperties(blobSize, "serviceID", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(blobSize, "serviceID", "memberId", "contentType", false,
+        Utils.Infinite_Time);
     testPutRequest(clusterMap, correlationId, clientId, blobId, blobProperties, emptyUserMetadata, BlobType.DataBlob,
         blob, blobSize);
 
-    blobProperties = new BlobProperties(blobSize, "serviceID", "memberId", "contentType", false, Utils.Infinite_Time);
+    blobProperties = BlobPropertiesUtils.getBlobProperties(blobSize, "serviceID", "memberId", "contentType", false,
+        Utils.Infinite_Time);
     // Ensure a Put Request with an invalid version does not get deserialized correctly.
     testPutRequestInvalidVersion(clusterMap, correlationId, clientId, blobId, blobProperties, userMetadata, blob);
 

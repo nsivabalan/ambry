@@ -22,6 +22,8 @@ import com.github.ambry.commons.ServerErrorCode;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobData;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesSerDe;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.BlobType;
 import com.github.ambry.messageformat.MessageFormatFlags;
 import com.github.ambry.messageformat.MessageFormatRecord;
@@ -61,6 +63,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static com.github.ambry.server.ServerTestUtil.*;
 
 
 public class ServerHardDeleteTest {
@@ -217,6 +221,7 @@ public class ServerHardDeleteTest {
    */
   @Test
   public void endToEndTestHardDeletes() throws Exception {
+    long expectedTokenOffset = 0;
     DataNodeId dataNodeId = mockClusterMap.getDataNodeIds().get(0);
     usermetadata = new ArrayList<byte[]>(9);
     data = new ArrayList<byte[]>(9);
@@ -229,15 +234,15 @@ public class ServerHardDeleteTest {
     }
 
     properties = new ArrayList<BlobProperties>(9);
-    properties.add(new BlobProperties(31870, "serviceid1"));
-    properties.add(new BlobProperties(31871, "serviceid1"));
-    properties.add(new BlobProperties(31872, "serviceid1"));
-    properties.add(new BlobProperties(31873, "serviceid1", "ownerid", "jpeg", false, 0));
-    properties.add(new BlobProperties(31874, "serviceid1"));
-    properties.add(new BlobProperties(31875, "serviceid1", "ownerid", "jpeg", false, 0));
-    properties.add(new BlobProperties(31876, "serviceid1"));
-    properties.add(new BlobProperties(31877, "serviceid1"));
-    properties.add(new BlobProperties(31878, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31870, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31871, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31872, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31873, "serviceid1", "ownerid", "jpeg", false, 0));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31874, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31875, "serviceid1", "ownerid", "jpeg", false, 0));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31876, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31877, "serviceid1"));
+    properties.add(BlobPropertiesUtils.getBlobProperties(31878, "serviceid1"));
 
     List<PartitionId> partitionIds = mockClusterMap.getWritablePartitionIds();
     PartitionId chosenPartition = partitionIds.get(0);
@@ -253,6 +258,8 @@ public class ServerHardDeleteTest {
     for (int i = 0; i < 6; i++) {
       // blob 3 and 5 are expired among these
       putBlob(blobIdList.get(i), properties.get(i), usermetadata.get(i), data.get(i), channel);
+      expectedTokenOffset += LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties.get(i))
+          + usermetadata.get(i).length + data.get(i).length;
     }
 
     notificationSystem.awaitBlobCreations(blobIdList.get(0).getID());
@@ -262,25 +269,40 @@ public class ServerHardDeleteTest {
 
     // delete blob 1
     deleteBlob(blobIdList.get(1), channel);
+    expectedTokenOffset += LOG_DELETE_RECORD_SIZE;
     zeroOutBlobContent(1);
     // delete blob 4
     deleteBlob(blobIdList.get(4), channel);
+    expectedTokenOffset += LOG_DELETE_RECORD_SIZE;
     zeroOutBlobContent(4);
 
     notificationSystem.awaitBlobDeletions(blobIdList.get(1).getID());
     notificationSystem.awaitBlobDeletions(blobIdList.get(4).getID());
 
     time.sleep(TimeUnit.DAYS.toMillis(1));
-    ensureCleanupTokenCatchesUp(chosenPartition.getReplicaIds().get(0).getReplicaPath(), mockClusterMap, 198443);
 
-    getAndVerify(channel, 6);
+    // - The offset stored in the token will be the position of the last entry in the log (the delete, in this case)
+    // - Thus, it will be equal to expectedTokenOffset - 1 delete record size
+    ensureCleanupTokenCatchesUp(chosenPartition.getReplicaIds().get(0).getReplicaPath(), mockClusterMap,
+        expectedTokenOffset - LOG_DELETE_RECORD_SIZE);
+
+    getAndVerify(channel, 2);
 
     // put blob 6
     putBlob(blobIdList.get(6), properties.get(6), usermetadata.get(6), data.get(6), channel);
+    expectedTokenOffset +=
+        LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties.get(6)) + usermetadata.get(
+            6).length + data.get(6).length;
     // put blob 7
     putBlob(blobIdList.get(7), properties.get(7), usermetadata.get(7), data.get(7), channel);
+    expectedTokenOffset +=
+        LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties.get(7)) + usermetadata.get(
+            7).length + data.get(7).length;
     // put blob 8
     putBlob(blobIdList.get(8), properties.get(8), usermetadata.get(8), data.get(8), channel);
+    expectedTokenOffset +=
+        LOG_PUT_RECORD_OVERHEAD + BlobPropertiesSerDe.getBlobPropertiesSerDeSize(properties.get(8)) + usermetadata.get(
+            8).length + data.get(8).length;
 
     notificationSystem.awaitBlobCreations(blobIdList.get(6).getID());
     notificationSystem.awaitBlobCreations(blobIdList.get(7).getID());
@@ -289,19 +311,25 @@ public class ServerHardDeleteTest {
 
     // delete blob 3 that is expired.
     deleteBlob(blobIdList.get(3), channel);
+    expectedTokenOffset += LOG_DELETE_RECORD_SIZE;
     zeroOutBlobContent(3);
     // delete blob 0
     deleteBlob(blobIdList.get(0), channel);
+    expectedTokenOffset += LOG_DELETE_RECORD_SIZE;
     zeroOutBlobContent(0);
     // delete blob 6.
     deleteBlob(blobIdList.get(6), channel);
+    expectedTokenOffset += LOG_DELETE_RECORD_SIZE;
     zeroOutBlobContent(6);
 
     notificationSystem.awaitBlobDeletions(blobIdList.get(0).getID());
     notificationSystem.awaitBlobDeletions(blobIdList.get(6).getID());
 
     time.sleep(TimeUnit.DAYS.toMillis(1));
-    ensureCleanupTokenCatchesUp(chosenPartition.getReplicaIds().get(0).getReplicaPath(), mockClusterMap, 297923);
+    // - The offset stored in the token will be the position of the last entry in the log (the delete, in this case)
+    // - Thus, it will be equal to expectedTokenOffset - 1 delete record size
+    ensureCleanupTokenCatchesUp(chosenPartition.getReplicaIds().get(0).getReplicaPath(), mockClusterMap,
+        expectedTokenOffset - LOG_DELETE_RECORD_SIZE);
 
     getAndVerify(channel, 9);
   }

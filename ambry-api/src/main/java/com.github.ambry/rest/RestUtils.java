@@ -214,6 +214,7 @@ public class RestUtils {
     String contentType = getHeader(args, Headers.AMBRY_CONTENT_TYPE, true);
     String ownerId = getHeader(args, Headers.OWNER_ID, false);
 
+    // @todo: fetch accountId, containerId and creatorAccountId
     return new BlobProperties(-1, serviceId, ownerId, contentType, isPrivate, ttl);
   }
 

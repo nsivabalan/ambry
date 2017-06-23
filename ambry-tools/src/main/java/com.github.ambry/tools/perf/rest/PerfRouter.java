@@ -15,6 +15,7 @@ package com.github.ambry.tools.perf.rest;
 
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.router.Callback;
 import com.github.ambry.router.FutureResult;
 import com.github.ambry.router.GetBlobOptions;
@@ -60,7 +61,7 @@ class PerfRouter implements Router {
    */
   public PerfRouter(PerfConfig perfConfig, PerfRouterMetrics perfRouterMetrics) {
     this.perfRouterMetrics = perfRouterMetrics;
-    blobProperties = new BlobProperties(perfConfig.perfBlobSize, "PerfRouter");
+    blobProperties = BlobPropertiesUtils.getBlobProperties(perfConfig.perfBlobSize, "PerfRouter");
     usermetadata = getRandomString(perfConfig.perfUserMetadataSize).getBytes();
     chunk = new byte[perfConfig.perfRouterChunkSize];
     random.nextBytes(chunk);

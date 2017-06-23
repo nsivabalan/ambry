@@ -46,7 +46,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 1
     StoreKey key1 = new MockId("id1");
-    BlobProperties prop1 = new BlobProperties(10, "servid1");
+    BlobProperties prop1 = BlobPropertiesUtils.getBlobProperties(10, "servid1");
     byte[] usermetadata1 = new byte[1000];
     new Random().nextBytes(usermetadata1);
     int blobContentSize = 2000;
@@ -76,7 +76,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 2
     StoreKey key2 = new MockId("id2");
-    BlobProperties prop2 = new BlobProperties(10, "servid2");
+    BlobProperties prop2 = BlobPropertiesUtils.getBlobProperties(10, "servid2");
     byte[] usermetadata2 = new byte[1000];
     new Random().nextBytes(usermetadata2);
     blobContentSize = 2000;
@@ -99,7 +99,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 3
     StoreKey key3 = new MockId("id3");
-    BlobProperties prop3 = new BlobProperties(10, "servid3");
+    BlobProperties prop3 = BlobPropertiesUtils.getBlobProperties(10, "servid3");
     byte[] usermetadata3 = new byte[1000];
     new Random().nextBytes(usermetadata3);
     blobContentSize = 2000;
@@ -185,7 +185,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 1
     StoreKey key1 = new MockId("id1");
-    BlobProperties prop1 = new BlobProperties(10, "servid1");
+    BlobProperties prop1 = BlobPropertiesUtils.getBlobProperties(10, "servid1");
     byte[] usermetadata1 = new byte[1000];
     new Random().nextBytes(usermetadata1);
     int blobContentSize = 2000;
@@ -216,7 +216,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 2
     StoreKey key2 = new MockId("id2");
-    BlobProperties prop2 = new BlobProperties(10, "servid2");
+    BlobProperties prop2 = BlobPropertiesUtils.getBlobProperties(10, "servid2");
     byte[] usermetadata2 = new byte[1000];
     new Random().nextBytes(usermetadata2);
     blobContentSize = 2000;
@@ -245,7 +245,7 @@ public class MessageSievingInputStreamTest {
 
     // create message stream for blob 3
     StoreKey key3 = new MockId("id3");
-    BlobProperties prop3 = new BlobProperties(10, "servid3");
+    BlobProperties prop3 = BlobPropertiesUtils.getBlobProperties(10, "servid3");
     byte[] usermetadata3 = new byte[1000];
     new Random().nextBytes(usermetadata3);
     blobContentSize = 2000;
@@ -328,7 +328,7 @@ public class MessageSievingInputStreamTest {
     try {
       // create message stream for blob 1
       StoreKey key1 = new MockId("id1");
-      BlobProperties prop1 = new BlobProperties(10, "servid1");
+      BlobProperties prop1 = BlobPropertiesUtils.getBlobProperties(10, "servid1");
       byte[] usermetadata1 = new byte[1000];
       new Random().nextBytes(usermetadata1);
       int blobContentSize = 2000;
@@ -357,7 +357,7 @@ public class MessageSievingInputStreamTest {
 
       // create message stream for blob 3
       StoreKey key3 = new MockId("id3");
-      BlobProperties prop3 = new BlobProperties(10, "servid3");
+      BlobProperties prop3 = BlobPropertiesUtils.getBlobProperties(10, "servid3");
       byte[] usermetadata3 = new byte[1000];
       new Random().nextBytes(usermetadata3);
       blobContentSize = 2000;

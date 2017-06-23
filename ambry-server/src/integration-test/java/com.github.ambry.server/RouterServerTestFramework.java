@@ -21,6 +21,7 @@ import com.github.ambry.commons.ByteBufferReadableStreamChannel;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobInfo;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.network.Selector;
 import com.github.ambry.protocol.GetOption;
 import com.github.ambry.router.Callback;
@@ -148,7 +149,7 @@ class RouterServerTestFramework {
     byte[] data = new byte[blobSize];
     new Random().nextBytes(userMetadata);
     new Random().nextBytes(data);
-    BlobProperties properties = new BlobProperties(blobSize, "serviceid1");
+    BlobProperties properties = BlobPropertiesUtils.getBlobProperties(blobSize, "serviceid1");
     OperationChain opChain = new OperationChain(chainId, properties, userMetadata, data, operations);
     continueChain(opChain);
     return opChain;

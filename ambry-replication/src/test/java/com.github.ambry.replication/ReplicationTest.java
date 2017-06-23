@@ -25,6 +25,7 @@ import com.github.ambry.commons.ServerErrorCode;
 import com.github.ambry.config.ReplicationConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.messageformat.MessageFormatException;
 import com.github.ambry.messageformat.MessageFormatInputStream;
 import com.github.ambry.messageformat.PutMessageFormatInputStream;
@@ -1226,7 +1227,7 @@ public class ReplicationTest {
     byte[] blob = new byte[(int) blobSize];
     new Random().nextBytes(usermetadata);
     new Random().nextBytes(blob);
-    BlobProperties blobProperties = new BlobProperties(blobSize, serviceId);
+    BlobProperties blobProperties = BlobPropertiesUtils.getBlobProperties(blobSize, serviceId);
 
     MessageFormatInputStream inputStream =
         new PutMessageFormatInputStream(id, blobProperties, ByteBuffer.wrap(usermetadata),

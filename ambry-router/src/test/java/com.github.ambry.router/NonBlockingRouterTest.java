@@ -23,6 +23,7 @@ import com.github.ambry.commons.ServerErrorCode;
 import com.github.ambry.config.RouterConfig;
 import com.github.ambry.config.VerifiableProperties;
 import com.github.ambry.messageformat.BlobProperties;
+import com.github.ambry.messageformat.BlobPropertiesUtils;
 import com.github.ambry.network.NetworkClient;
 import com.github.ambry.network.NetworkClientErrorCode;
 import com.github.ambry.network.RequestInfo;
@@ -146,7 +147,7 @@ public class NonBlockingRouterTest {
   }
 
   private void setOperationParams() {
-    putBlobProperties = new BlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
+    putBlobProperties = BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, Utils.Infinite_Time);
     putUserMetadata = new byte[10];
     random.nextBytes(putUserMetadata);
     putContent = new byte[PUT_CONTENT_SIZE];
@@ -453,7 +454,7 @@ public class NonBlockingRouterTest {
       if (i == 2) {
         // Create a clean cluster and put another blob that immediate expires.
         setOperationParams();
-        putBlobProperties = new BlobProperties(-1, "serviceId", "memberId", "contentType", false, 0);
+        putBlobProperties = BlobPropertiesUtils.getBlobProperties(-1, "serviceId", "memberId", "contentType", false, 0);
         blobId = router.putBlob(putBlobProperties, putUserMetadata, putChannel).get();
         Set<String> allBlobsInServer = getBlobsInServers(mockServerLayout);
         allBlobsInServer.removeAll(blobsToBeDeleted);

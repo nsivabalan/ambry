@@ -40,15 +40,6 @@ public class BlobProperties {
   /**
    * @param blobSize The size of the blob in bytes
    * @param serviceId The service id that is creating this blob
-   * @TODO: Remove this constructor once BlobProperty V2 is enabled
-   */
-  public BlobProperties(long blobSize, String serviceId) {
-    this(blobSize, serviceId, null, null, false, Utils.Infinite_Time, SystemTime.getInstance().milliseconds());
-  }
-
-  /**
-   * @param blobSize The size of the blob in bytes
-   * @param serviceId The service id that is creating this blob
    * @param accountId accountId of the user who owns the blob
    * @param containerId containerId of the blob
    * @param creatorAccountId refers to accountId of the creator of the blob
@@ -70,7 +61,7 @@ public class BlobProperties {
   public BlobProperties(long blobSize, String serviceId, String ownerId, String contentType, boolean isPrivate,
       long timeToLiveInSeconds) {
     this(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds,
-        SystemTime.getInstance().milliseconds());
+        SystemTime.getInstance().milliseconds(), LEGACY_ACCOUNT_ID, LEGACY_CONTAINER_ID, LEGACY_ACCOUNT_ID);
   }
 
   /**
@@ -88,22 +79,6 @@ public class BlobProperties {
       long timeToLiveInSeconds, short accountId, short containerId, short creatorAccountId) {
     this(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds,
         SystemTime.getInstance().milliseconds(), accountId, containerId, creatorAccountId);
-  }
-
-  /**
-   * @param blobSize The size of the blob in bytes
-   * @param serviceId The service id that is creating this blob
-   * @param ownerId The owner of the blob (For example , memberId or groupId)
-   * @param contentType The content type of the blob (eg: mime). Can be Null
-   * @param isPrivate Is the blob secure
-   * @param timeToLiveInSeconds The time to live, in seconds, relative to blob creation time.
-   * @param creationTimeInMs The time at which the blob is created.
-   * @TODO: Remove this constructor once BlobProperty V2 is enabled
-   */
-  public BlobProperties(long blobSize, String serviceId, String ownerId, String contentType, boolean isPrivate,
-      long timeToLiveInSeconds, long creationTimeInMs) {
-    this(blobSize, serviceId, ownerId, contentType, isPrivate, timeToLiveInSeconds, creationTimeInMs, LEGACY_ACCOUNT_ID,
-        LEGACY_CONTAINER_ID, LEGACY_ACCOUNT_ID);
   }
 
   /**
