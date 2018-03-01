@@ -89,11 +89,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.net.ssl.SSLSocketFactory;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
 
 public final class ServerTestUtil {
+
+  private static final Logger logger = LoggerFactory.getLogger(ServerTestUtil.class);
 
   protected static void endToEndTest(Port targetPort, String routerDatacenter, String sslEnabledDatacenters,
       MockCluster cluster, SSLConfig clientSSLConfig, SSLSocketFactory clientSSLSocketFactory, Properties routerProps,
@@ -401,6 +405,7 @@ public final class ServerTestUtil {
       MockNotificationSystem notificationSystem, boolean testEncryption)
       throws InterruptedException, IOException, InstantiationException {
     // interestedDataNodePortNumber is used to locate the datanode and hence has to be PlainTextPort
+    logger.info(" endToEndReplicationWithMultiNodeMultiPartitionTest start");
     try {
       MockClusterMap clusterMap = cluster.getClusterMap();
       BlobIdFactory blobIdFactory = new BlobIdFactory(clusterMap);
@@ -653,8 +658,11 @@ public final class ServerTestUtil {
       }
 
       // take a server down, clean up a mount path, start and ensure replication fixes it
+      logger.info("a. shutdown to be invoked");
       serverList.get(0).shutdown();
+      logger.info("a. awaiting shutdown");
       serverList.get(0).awaitShutdown();
+      logger.info("a. awaiting shutdown complete");
 
       MockDataNodeId dataNode = (MockDataNodeId) clusterMap.getDataNodeId("localhost", interestedDataNodePortNumber);
       System.out.println("Cleaning mount path " + dataNode.getMountPaths().get(0));
@@ -677,7 +685,9 @@ public final class ServerTestUtil {
           }
         }
       }
+      logger.info("b. start up ");
       serverList.get(0).startup();
+      logger.info("b. start up complete ");
 
       channel1.disconnect();
       channel1.connect();
@@ -813,8 +823,11 @@ public final class ServerTestUtil {
       }
       assertEquals(0, blobsDeleted.size());
       // take a server down, clean all contents, start and ensure replication fixes it
+      logger.info("c. shutdown being invoked");
       serverList.get(0).shutdown();
+      logger.info("c. awaiting shutdown ");
       serverList.get(0).awaitShutdown();
+      logger.info("c. awaiting shutdown complete");
 
       dataNode = (MockDataNodeId) clusterMap.getDataNodeId("localhost", interestedDataNodePortNumber);
       for (int i = 0; i < dataNode.getMountPaths().size(); i++) {
@@ -835,7 +848,9 @@ public final class ServerTestUtil {
               dataNode.getPort());
         }
       }
+      logger.info("d. start up ");
       serverList.get(0).startup();
+      logger.info("d. start up complete");
 
       channel1.disconnect();
       channel1.connect();
@@ -977,6 +992,7 @@ public final class ServerTestUtil {
       e.printStackTrace();
       Assert.fail();
     }
+    logger.info(" endToEndReplicationWithMultiNodeMultiPartitionTest complete ");
   }
 
   protected static void endToEndReplicationWithMultiNodeMultiPartitionMultiDCTest(String sourceDatacenter,
@@ -1068,6 +1084,7 @@ public final class ServerTestUtil {
       MockNotificationSystem notificationSystem, Properties routerProps, boolean testEncryption)
       throws InterruptedException, IOException, InstantiationException {
     // interestedDataNodePortNumber is used to locate the datanode and hence has to be PlainText port
+    logger.info("Starting endToEndReplicationWithMultiNodeSinglePartitionTest :::::::::: local repo ");
     try {
       int expectedTokenSize = 0;
       MockClusterMap clusterMap = cluster.getClusterMap();
@@ -1363,8 +1380,11 @@ public final class ServerTestUtil {
       checkReplicaTokens(clusterMap, dataNodeId, expectedTokenSize - getDeleteRecordSize(blobIdList.get(0)), "0");
 
       // Shut down server 1
+      logger.info("a. Shutting down server 1 start ");
       cluster.getServers().get(0).shutdown();
+      logger.info("a. Awaiting server 1 shutdown ");
       cluster.getServers().get(0).awaitShutdown();
+      logger.info("a. Shutting down server 1 complete ");
       // Add more data to server 2 and server 3. Recover server 1 and ensure it is completely replicated
       // put blob 7
       putRequest2 = new PutRequest(1, "client1", blobIdList.get(6), propertyList.get(6), ByteBuffer.wrap(usermetadata),
@@ -1427,7 +1447,9 @@ public final class ServerTestUtil {
       response2 = PutResponse.readFrom(new DataInputStream(putResponseStream));
       assertEquals(ServerErrorCode.No_Error, response2.getError());
 
+      logger.info("b. start up");
       cluster.getServers().get(0).startup();
+      logger.info("b. start up complete");
       // wait for server to recover
       notificationSystem.awaitBlobCreations(blobIdList.get(6).getID());
       notificationSystem.awaitBlobCreations(blobIdList.get(7).getID());
@@ -1455,8 +1477,11 @@ public final class ServerTestUtil {
       }
 
       // Shutdown server 1. Remove all its data from all mount path. Recover server 1 and ensure node is built
+      logger.info("c. Shutting down server 1 start ");
       cluster.getServers().get(0).shutdown();
+      logger.info("c. Awaiting for server 1 to shutdown");
       cluster.getServers().get(0).awaitShutdown();
+      logger.info("c. Shutting down server 1 complete ");
 
       File mountFile = new File(clusterMap.getReplicaIds(dataNodeId).get(0).getMountPath());
       for (File toDelete : mountFile.listFiles()) {
@@ -1483,7 +1508,9 @@ public final class ServerTestUtil {
       notificationSystem.decrementCreatedReplica(blobIdList.get(10).getID(), dataNodeId.getHostname(),
           dataNodeId.getPort());
 
+      logger.info("d. start up");
       cluster.getServers().get(0).startup();
+      logger.info("d. start up complete");
       notificationSystem.awaitBlobCreations(blobIdList.get(1).getID());
       notificationSystem.awaitBlobCreations(blobIdList.get(2).getID());
       notificationSystem.awaitBlobCreations(blobIdList.get(3).getID());
@@ -1522,6 +1549,7 @@ public final class ServerTestUtil {
       e.printStackTrace();
       Assert.fail();
     }
+    logger.info("Completing endToEndReplicationWithMultiNodeSinglePartitionTest :::::::::: local repo ");
   }
 
   /**
